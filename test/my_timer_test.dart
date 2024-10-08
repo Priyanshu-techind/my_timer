@@ -1,7 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/material.dart';
 import 'package:my_timer/my_timer.dart';
-import 'package:my_timer/src/my_timer_controller/my_timer_controller.dart';
 
 void main() {
   late MyTimerController controller;
