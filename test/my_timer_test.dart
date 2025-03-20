@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/material.dart';
+import 'package:my_timer/controller/my_timer_controller.dart';
 import 'package:my_timer/my_timer.dart';
 
 void main() {

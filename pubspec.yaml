@@ -1,20 +1,19 @@
 name: my_timer
 description: "A customizable Flutter timer widget that supports incrementing and decrementing time with callbacks for tick and completion."
-version: 1.0.0
+version: 1.0.1
 homepage: https://github.com/Priyanshu-techind/my_timer
 
 environment:
-  sdk: ^3.5.1
+  sdk: ^3.6.0
   flutter: ">=1.17.0"
 
 dependencies:
   flutter:
     sdk: flutter
+  provider: ^6.1.2
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^4.0.0
+  flutter_lints: ^5.0.0
 
-flutter:
-# Add assets or fonts if needed in the future
