@@ -12,10 +12,6 @@
 > `reset` / `seek`, format presets, custom builders, and automatic resync
 > after the app returns from the background.
 
-<p align="center">
-  <img src="screenshots/hero.gif" alt="my_timer demo" width="320"/>
-</p>
-
 ---
 
 ## Table of contents
@@ -255,10 +251,6 @@ fixed. See the full [CHANGELOG](CHANGELOG.md) for details.
 ## Contributing
 
 Issues and PRs welcome at <https://github.com/Priyanshu-techind/my_timer>.
-
-If you're capturing the screenshots referenced above, see
-[`screenshots/SCREENSHOT_GUIDE.md`](screenshots/SCREENSHOT_GUIDE.md) for
-exact specs.
 
 ## License
 

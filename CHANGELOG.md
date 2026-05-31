@@ -88,18 +88,6 @@ adheres to [Semantic Versioning](https://semver.org/).
   subscribe directly with `ValueListenableBuilder` if they need more
   control than the widget provides.
 
-### Added — packaging & docs
-
-- `repository`, `issue_tracker`, `topics`, and `screenshots` fields added
-  to [pubspec.yaml](pubspec.yaml) for better pub.dev visibility.
-- Comprehensive dartdoc comments on every public symbol.
-- README rewrite with shields.io badges, comparison table, screenshot grid,
-  TOC, and migration guide.
-- Example app rewritten as a 4-tab demo (countdown, stopwatch, custom
-  builder, format gallery).
-- [`screenshots/SCREENSHOT_GUIDE.md`](screenshots/SCREENSHOT_GUIDE.md)
-  with capture specs for contributors.
-
 ### Fixed
 
 - Calling `controller.start()` before the widget mounted threw a
