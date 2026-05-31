@@ -1,127 +1,177 @@
-# MyTimer
+# my_timer
 
-MyTimer is a flexible and customizable timer widget for Flutter. It allows developers to easily
-integrate timer functionality into their apps, supporting both incrementing and decrementing timers.
-With control over start/stop functionality, tick intervals, and callbacks for each tick and
-completion, MyTimer is an ideal solution for timed events, countdowns, and more.
+A **drift-free**, **dependency-free** Flutter timer widget that handles count-up
+and count-down out of the box, with proper `pause` / `resume` / `reset` / `seek`,
+format presets, custom builders, and automatic resync after the app returns
+from the background.
 
-## Features
+## Why my_timer?
 
-- Increment or decrement timer functionality.
-- Customizable tick interval (e.g., every second, minute, etc.).
-- Start, stop, and reset timer programmatically with MyTimerController.
-- Callback function for each tick.
-- Callback function when the timer completes.
-- Pass a custom child widget to display in place of the default time.
-- Customize text style for the timer's display.
-- Ideal for countdown timers, time trackers, or event timers.
+| | my_timer | most other packages |
+|---|---|---|
+| Count-up & count-down in one widget | yes | usually two separate widgets |
+| `pause()` / `resume()` / `reset()` / `seek()` / `add()` / `subtract()` | yes | partial |
+| Drift-free (uses `Stopwatch`, not a tick counter) | yes | rarely |
+| Resyncs after app backgrounding | yes | rarely |
+| Built-in format presets (`mm:ss`, `hh:mm:ss`, etc.) | yes | usually manual |
+| Zero external dependencies | yes | many pull in `provider` / `rxdart` |
 
-## Installation
-
-command:
-
-```yaml
- $ flutter pub add my_timer
-```
-pubspec.yaml:
+## Install
 
 ```yaml
 dependencies:
-my_timer: ^1.0.0
-``` 
+  my_timer: ^2.0.0
+```
 
-## Usage
+## Quick start
+
+### Count-down
 
 ```dart
 import 'package:my_timer/my_timer.dart';
-import 'my_timer_controller/my_timer_controller.dart';
 
 MyTimer(
-  isIncrementing: true,
-  startTimerInSeconds: 0,
-  endTimerInSeconds: 60,
-  tickInSecond: const Duration(seconds: 1),
-  controller: _timerController,
-  style: const TextStyle(color: Colors.red, fontSize: 24),
-  child: const Text('Custom Timer'),
-)
-
-ElevatedButton(
-  onPressed: () {
-    _timerController.start();
-  },
-  child: const Text('Start Timer'),
-),
-
-ElevatedButton(
-  onPressed: () {
-    _timerController.stop();
-  },
-  child: const Text('Stop Timer'),
+  duration: const Duration(minutes: 5),
+  direction: TimerDirection.countDown,
+  format: TimerFormat.minutesSeconds,
+  onComplete: () => debugPrint('done!'),
 )
 ```
 
-## Customizing the Timer
-
-You can customize `MyTimer` to suit your specific needs by adjusting various properties:
-
-1. **tickInSecond**: Define the tick interval. The default is 1 second.
-2. **isIncrementing**: Specify whether the timer should count up (`true`) or count down (`false`).
-3. **startTimerInSeconds**: Set the starting time in seconds.
-4. **endTimerInSeconds**: Define when the timer should end.
-5. **controller**: Use a `MyTimerController` to start and stop the timer programmatically.
-6. **child**: Pass a custom widget to display instead of the default timer.
-7. **style**: Customize the text style for the time display.
-
-
-## Example: Decrementing Timer
-
-Here's an example of using the decrementing timer:
+### Count-up
 
 ```dart
 MyTimer(
-  isIncrementing: false,
-  startTimerInSeconds: 120,
-  endTimerInSeconds: 0,
-  tickInSecond: const Duration(seconds: 1),
-  controller: _timerController,
-  style: const TextStyle(color: Colors.green, fontSize: 24),
+  duration: const Duration(minutes: 1),
+  direction: TimerDirection.countUp,
+  format: TimerFormat.minutesSeconds,
 )
 ```
 
-# MyTimerController
-
-The `MyTimerController` allows you to control the timer programmatically. You can start, stop, or retrieve the current time with the following methods:
-
-- **`start()`**: Start the timer.
-- **`stop()`**: Stop the timer.
-- **`getTimer()`**: Get the current remaining time as a `Duration`.
-
-## Example: Using MyTimerController
-
-Here's an example of using the `MyTimerController`:
+### Programmatic control
 
 ```dart
-final MyTimerController _timerController = MyTimerController();
+final controller = MyTimerController(
+  onTick: (remaining) => print('$remaining left'),
+  onComplete: () => print('done!'),
+);
 
-ElevatedButton(
-  onPressed: () {
-    _timerController.start();
-  },
-  child: const Text('Start Timer'),
-),
+MyTimer(
+  controller: controller,
+  duration: const Duration(minutes: 10),
+  direction: TimerDirection.countDown,
+  autoStart: false,
+);
 
-ElevatedButton(
-  onPressed: () {
-    _timerController.stop();
-  },
-  child: const Text('Stop Timer'),
-),
+// Anywhere in your app:
+controller.start();
+controller.pause();
+controller.resume();
+controller.reset();
+controller.seek(const Duration(minutes: 2));
+controller.add(const Duration(seconds: 30));
+controller.subtract(const Duration(seconds: 30));
+
+// Inspect state:
+controller.isRunning;
+controller.isPaused;
+controller.isCompleted;
+controller.elapsed;
+controller.remaining;
 ```
 
-# Additional Information
+### Custom rendering with `builder`
 
-For more information, feel free to check out the source code, submit issues, or contribute to the project on GitHub. We welcome contributions and feedback from the community.
+```dart
+MyTimer(
+  duration: const Duration(minutes: 25),
+  direction: TimerDirection.countDown,
+  builder: (context, remaining, elapsed) {
+    return Column(
+      children: [
+        LinearProgressIndicator(
+          value: elapsed.inMilliseconds / (25 * 60 * 1000),
+        ),
+        Text('${remaining.inMinutes}:${(remaining.inSeconds % 60).toString().padLeft(2, '0')}'),
+      ],
+    );
+  },
+)
+```
 
-- **GitHub Repository**: [https://github.com/Priyanshu-techind/my_timer](https://github.com/Priyanshu-techind/my_timer)
-- **Issue Tracker**: [https://github.com/Priyanshu-techind/my_timer/issues](https://github.com/Priyanshu-techind/my_timer/issues)
+### Custom formatter
+
+```dart
+MyTimer(
+  duration: const Duration(minutes: 5),
+  formatter: (d) => '${d.inSeconds} seconds left',
+)
+```
+
+## Format presets
+
+| `TimerFormat` | Output for `93s` |
+|---|---|
+| `auto` | `01:33` |
+| `seconds` | `93` |
+| `minutesSeconds` | `01:33` |
+| `hoursMinutesSeconds` | `00:01:33` |
+| `minutesSecondsMillis` | `01:33.000` |
+| `daysHoursMinutesSeconds` | `00:00:01:33` |
+
+## API reference
+
+### `MyTimer`
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `duration` | `Duration?` | `120s` | Total duration the timer runs for. |
+| `direction` | `TimerDirection` | `countUp` | `countUp` or `countDown`. |
+| `tickInterval` | `Duration` | `1s` | UI refresh cadence. Doesn't affect clock accuracy. |
+| `autoStart` | `bool` | `true` | Start ticking on mount. |
+| `controller` | `MyTimerController?` | `null` | Remote control. |
+| `builder` | `Widget Function(BuildContext, Duration remaining, Duration elapsed)?` | `null` | Custom renderer. |
+| `legacyBuilder` | `Widget Function({BuildContext context, int remainingTime})?` | `null` | 1.x-style builder, for migration. |
+| `child` | `Widget?` | `null` | Static replacement widget. |
+| `style` | `TextStyle?` | — | Style for default text. |
+| `format` | `TimerFormat` | `auto` | Built-in format preset. |
+| `formatter` | `String Function(Duration)?` | `null` | Custom formatter. |
+| `resyncOnResume` | `bool` | `true` | Recompute on `AppLifecycleState.resumed`. |
+| `onTick` | `void Function(Duration)?` | `null` | Per-tick callback. |
+| `onComplete` | `VoidCallback?` | `null` | Fires once at completion. |
+
+### `MyTimerController`
+
+| Method / getter | Description |
+|---|---|
+| `start()` / `resume()` | Start or resume. |
+| `pause()` / `stop()` | Pause, preserving elapsed time. |
+| `reset()` | Zero elapsed time. |
+| `seek(Duration)` | Jump to a position. |
+| `add(Duration)` / `subtract(Duration)` | Adjust elapsed time. |
+| `isRunning` / `isPaused` / `isCompleted` / `isAttached` | State checks. |
+| `elapsed` / `remaining` | Current values. |
+| `getTimer()` | 1.x compatibility: returns the displayed value. |
+| `onTick` / `onComplete` | Callback fields. |
+
+## Migrating from 1.x
+
+The 1.x API is preserved under deprecated names — your code keeps working,
+but you should switch to the new names:
+
+| 1.x | 2.x |
+|---|---|
+| `isIncrementing: true` | `direction: TimerDirection.countUp` |
+| `isIncrementing: false` | `direction: TimerDirection.countDown` |
+| `startTimerInSeconds` / `endTimerInSeconds` | `duration` |
+| `tickInSecond` | `tickInterval` |
+| `builder: ({context, remainingTime}) {...}` | `legacyBuilder: ({context, remainingTime}) {...}` |
+
+The biggest under-the-hood improvement: the timer is now **drift-free** and
+**survives app backgrounding**. Previously, `tickInSecond` of `500ms` would
+cause the displayed seconds to count twice as fast as real time — that's now
+fixed.
+
+## Contributing
+
+Issues and PRs welcome at <https://github.com/Priyanshu-techind/my_timer>.

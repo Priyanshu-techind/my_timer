@@ -1,10 +1,7 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:my_timer/my_timer.dart';
 
-void main() {
-  runApp(const MyApp());
-}
+void main() => runApp(const MyApp());
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -12,178 +9,211 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'My Timer Demo',
+      title: 'my_timer demo',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const MyHomePage(),
+      home: const DemoHome(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key});
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  Timer? _timer; // Timer instance for handling countdown logic
-  int elapsedTimeInSeconds = 0; // Tracks elapsed time in seconds
-  int timerDuration = 10; // Default timer duration
-  String? errorMessage; // Stores error messages for invalid input
-  final TextEditingController _durationController =
-      TextEditingController(); // Controller for user input
-
-  @override
-  void initState() {
-    super.initState();
-    _durationController.text =
-        timerDuration.toString(); // Initialize text field with default duration
-  }
-
-  /// Starts the timer
-  void startTimer() {
-    final int? duration = int.tryParse(
-        _durationController.text); // Convert user input to an integer
-    if (duration != null && duration > 0) {
-      setState(() {
-        timerDuration = duration;
-        elapsedTimeInSeconds = 0; // Reset elapsed time
-        errorMessage = null; // Clear error message
-      });
-
-      _timer?.cancel(); // Cancel any existing timer before starting a new one
-
-      _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-        if (elapsedTimeInSeconds < timerDuration) {
-          setState(() {
-            elapsedTimeInSeconds++; // Increment elapsed time every second
-          });
-        } else {
-          timer.cancel(); // Stop the timer when the duration is reached
-          debugPrint("Timer completed!");
-        }
-      });
-    } else {
-      setState(() {
-        errorMessage =
-            'Please enter a valid duration (positive number)'; // Show error if input is invalid
-      });
-    }
-  }
-
-  /// Stops the timer
-  void stopTimer() {
-    _timer?.cancel(); // Cancel the timer to stop counting
-  }
-
-  /// Resets the timer
-  void resetTimer() {
-    stopTimer(); // Stop the timer before resetting
-    final int? duration = int.tryParse(_durationController.text);
-    if (duration != null && duration > 0) {
-      setState(() {
-        timerDuration = duration;
-        elapsedTimeInSeconds = 0; // Reset elapsed time
-        errorMessage = null; // Clear error message
-      });
-    } else {
-      setState(() {
-        errorMessage =
-            'Please enter a valid duration'; // Show error if input is invalid
-      });
-    }
-  }
-
-  @override
-  void dispose() {
-    _timer?.cancel(); // Cancel the timer to prevent memory leaks
-    _durationController.dispose(); // Dispose the text controller
-    super.dispose();
-  }
+class DemoHome extends StatelessWidget {
+  const DemoHome({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: const Text('Simple Timer'),
-        backgroundColor: Colors.deepPurpleAccent,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+    return DefaultTabController(
+      length: 4,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('my_timer demo'),
+          bottom: const TabBar(
+            isScrollable: true,
+            tabs: [
+              Tab(text: 'Countdown'),
+              Tab(text: 'Stopwatch'),
+              Tab(text: 'Custom builder'),
+              Tab(text: 'Formats'),
+            ],
+          ),
+        ),
+        body: const TabBarView(
           children: [
-            // Input field for setting timer duration
-            TextField(
-              controller: _durationController,
-              decoration: const InputDecoration(
-                labelText: 'Set Timer Duration (seconds)',
-                border: OutlineInputBorder(),
-              ),
-              keyboardType: TextInputType.number, // Ensures only numeric input
-            ),
-
-            if (errorMessage != null)
-              Text(
-                errorMessage!,
-                style: const TextStyle(
-                    color: Colors.red), // Display error message in red
-              ),
-
-            const SizedBox(height: 20),
-
-            // Display elapsed time
-            Text(
-              'Elapsed Time: $elapsedTimeInSeconds sec',
-              style: const TextStyle(fontSize: 20),
-            ),
-
-            // Custom Timer Widget (MyTimer) from the my_timer package
-            MyTimer(
-              isIncrementing: false,
-              // Countdown mode
-              startTimerInSeconds: 0,
-              // End at 0 seconds
-              endTimerInSeconds: 100,
-              // Start from 100 seconds because of isIncrementing is false
-              builder: ({required context, required remainingTime}) {
-                return Text(
-                  'Remaining Time in Seconds $remainingTime',
-                  style: const TextStyle(fontSize: 20, color: Colors.black),
-                );
-              },
-            ),
-
-            const SizedBox(height: 20),
-
-            // Buttons for Timer Control
-            Wrap(
-              alignment: WrapAlignment.center,
-              spacing: 10,
-              runSpacing: 20,
-              children: [
-                ElevatedButton(
-                  onPressed: startTimer,
-                  child: const Text('Start Timer'), // Starts the timer
-                ),
-                ElevatedButton(
-                  onPressed: stopTimer,
-                  child: const Text('Stop Timer'), // Stops the timer
-                ),
-                ElevatedButton(
-                  onPressed: resetTimer,
-                  child: const Text('Reset Timer'), // Resets the timer
-                ),
-              ],
-            ),
+            _CountdownDemo(),
+            _StopwatchDemo(),
+            _BuilderDemo(),
+            _FormatsDemo(),
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Pause / resume / reset / seek demo.
+class _CountdownDemo extends StatefulWidget {
+  const _CountdownDemo();
+
+  @override
+  State<_CountdownDemo> createState() => _CountdownDemoState();
+}
+
+class _CountdownDemoState extends State<_CountdownDemo> {
+  final controller = MyTimerController();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          MyTimer(
+            controller: controller,
+            duration: const Duration(seconds: 30),
+            direction: TimerDirection.countDown,
+            format: TimerFormat.minutesSeconds,
+            autoStart: false,
+            style: const TextStyle(fontSize: 64, fontWeight: FontWeight.bold),
+            onComplete: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Countdown complete!')),
+              );
+            },
+          ),
+          const SizedBox(height: 32),
+          Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            alignment: WrapAlignment.center,
+            children: [
+              FilledButton(onPressed: controller.start, child: const Text('Start')),
+              FilledButton.tonal(onPressed: controller.pause, child: const Text('Pause')),
+              FilledButton.tonal(onPressed: controller.resume, child: const Text('Resume')),
+              OutlinedButton(onPressed: controller.reset, child: const Text('Reset')),
+              TextButton(
+                onPressed: () => controller.add(const Duration(seconds: 10)),
+                child: const Text('+10s'),
+              ),
+              TextButton(
+                onPressed: () => controller.subtract(const Duration(seconds: 10)),
+                child: const Text('-10s'),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Count-up stopwatch with milliseconds precision.
+class _StopwatchDemo extends StatefulWidget {
+  const _StopwatchDemo();
+
+  @override
+  State<_StopwatchDemo> createState() => _StopwatchDemoState();
+}
+
+class _StopwatchDemoState extends State<_StopwatchDemo> {
+  final controller = MyTimerController();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          MyTimer(
+            controller: controller,
+            duration: const Duration(hours: 1),
+            direction: TimerDirection.countUp,
+            tickInterval: const Duration(milliseconds: 33),
+            format: TimerFormat.minutesSecondsMillis,
+            autoStart: false,
+            style: const TextStyle(fontSize: 48, fontFamily: 'monospace'),
+          ),
+          const SizedBox(height: 32),
+          Wrap(
+            spacing: 12,
+            children: [
+              FilledButton(onPressed: controller.start, child: const Text('Start')),
+              FilledButton.tonal(onPressed: controller.pause, child: const Text('Pause')),
+              OutlinedButton(onPressed: controller.reset, child: const Text('Reset')),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Custom builder showing both elapsed (progress bar) and remaining (text).
+class _BuilderDemo extends StatelessWidget {
+  const _BuilderDemo();
+
+  @override
+  Widget build(BuildContext context) {
+    const total = Duration(seconds: 20);
+    return Padding(
+      padding: const EdgeInsets.all(24),
+      child: Center(
+        child: MyTimer(
+          duration: total,
+          direction: TimerDirection.countDown,
+          tickInterval: const Duration(milliseconds: 50),
+          builder: (context, remaining, elapsed) {
+            final progress = elapsed.inMilliseconds / total.inMilliseconds;
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  '${remaining.inSeconds}s',
+                  style: const TextStyle(fontSize: 72, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: 240,
+                  child: LinearProgressIndicator(
+                    value: progress.clamp(0.0, 1.0),
+                    minHeight: 12,
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+/// Show every built-in format preset side by side.
+class _FormatsDemo extends StatelessWidget {
+  const _FormatsDemo();
+
+  @override
+  Widget build(BuildContext context) {
+    const presets = TimerFormat.values;
+    return ListView(
+      padding: const EdgeInsets.all(24),
+      children: [
+        for (final preset in presets) ...[
+          Text(preset.name, style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 4),
+          MyTimer(
+            duration: const Duration(hours: 1, minutes: 30, seconds: 45),
+            direction: TimerDirection.countUp,
+            format: preset,
+            tickInterval: const Duration(milliseconds: 100),
+            style: const TextStyle(fontSize: 28, fontFamily: 'monospace'),
+          ),
+          const Divider(height: 32),
+        ],
+      ],
     );
   }
 }
