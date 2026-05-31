@@ -12,6 +12,16 @@ topics:
   - widget
   - duration
 
+screenshots:
+  - description: 'Countdown timer with pause, resume, reset, and ±10s controls.'
+    path: screenshots/countdown.png
+  - description: 'Count-up stopwatch with millisecond precision.'
+    path: screenshots/stopwatch.png
+  - description: 'Custom builder showing a progress bar alongside the timer text.'
+    path: screenshots/custom_builder.png
+  - description: 'All six built-in format presets rendered side-by-side.'
+    path: screenshots/formats.png
+
 environment:
   sdk: ^3.6.0
   flutter: ">=1.17.0"
